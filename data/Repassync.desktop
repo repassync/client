@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Repassync
+Comment=Generate, store and synchronize your passwords securely.
+Keywords=password;keypass;
+Exec=repassync %u
+Icon=repassync
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Utility;

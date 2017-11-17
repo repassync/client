@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.1 -->
+<interface domain="repassync">
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkPopoverMenu" id="add-popover">
+    <property name="can_focus">False</property>
+    <property name="valign">center</property>
+    <child>
+      <object class="GtkBox" id="add-box">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="valign">center</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">6</property>
+        <child>
+          <object class="GtkLabel" id="add-box-enter-name-label">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="hexpand">False</property>
+            <property name="label" translatable="yes">Enter entry name to add</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="new-name">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="width_chars">20</property>
+            <property name="placeholder_text" translatable="yes">New entry name</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="add-box-already-existing-label">
+            <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">An entry with that name already exists</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="add-box-enter-password-label">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="hexpand">False</property>
+            <property name="label" translatable="yes">Enter entry password</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="add-password-box">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkEntry" id="new-password">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="visibility">False</property>
+                <property name="activates_default">True</property>
+                <property name="width_chars">32</property>
+                <property name="placeholder_text" translatable="yes">New password</property>
+                <property name="input_purpose">password</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="show-password">
+                <property name="label" translatable="yes">Show password</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="add-button">
+                <property name="label" translatable="yes">Add</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkExpander" id="add-password-options">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child type="label">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Password generator</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="submenu">submenu0</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkHeaderBar" id="header">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="show_close_button">True</property>
+    <child>
+      <object class="GtkMenuButton" id="add-toggle-button">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="tooltip_text" translatable="yes">Add a new entry</property>
+        <property name="direction">none</property>
+        <property name="popover">add-popover</property>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="icon_name">list-add-symbolic</property>
+          </object>
+        </child>
+        <style>
+          <class name="image-button"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkToggleButton" id="search">
+        <property name="visible">True</property>
+        <property name="sensitive">False</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">False</property>
+        <child>
+          <object class="GtkImage" id="search-icon">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="icon_name">edit-find-symbolic</property>
+            <property name="icon_size">1</property>
+          </object>
+        </child>
+        <style>
+          <class name="image-button"/>
+        </style>
+      </object>
+      <packing>
+        <property name="pack_type">end</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
+</interface>

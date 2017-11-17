@@ -1,0 +1,21 @@
+[package]
+name = "repassync"
+version = "0.1.0"
+authors = ["Lucas Satabin <lucas.satabin@gnieh.org>"]
+
+[dependencies]
+gpgme = "0.6"
+chrono = "0.4"
+sha2 = "0.6"
+rand = "0.3"
+char-iter = "0.1"
+
+[dependencies.gtk]
+version = "0.2.0"
+features = ["v3_22"]
+
+[dependencies.gio]
+version = "0.2.0"
+
+[dependencies.glib]
+version = "0.3.1"
