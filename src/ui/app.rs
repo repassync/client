@@ -22,7 +22,7 @@ use std::sync::mpsc;
 
 use gtk::prelude::*;
 use gtk::*;
-use gio::{Resource, Error, resources_register};
+use gio::{Resource, resources_register};
 use glib;
 
 use model::Vault;
@@ -35,12 +35,12 @@ pub struct App {
     show_password: CheckButton,
     add_button: Button,
 
-    vault: Option<Rc<Vault>>
+    vault: Option<Vault>
 }
 
 impl App {
 
-    pub fn new(app: &Application) -> Result<Rc<Self>, Error> {
+    pub fn new(app: &Application) -> Rc<RefCell<Self>> {
 
         // load and register the resource
         match Resource::load(Path::new(format!("{}/repassync.gresource", DATADIR).as_str())) {
@@ -48,7 +48,7 @@ impl App {
                 resources_register(&res);
             },
             Err(e) => {
-                return Err(e)
+                panic!("Unable to create application: {}", e);
             }
         }
 
@@ -83,33 +83,38 @@ impl App {
             vault: None
         };
 
-        let me = Rc::new(app);
+        let me = Rc::new(RefCell::new(app));
         {
             let me_too = me.clone();
-            me.new_name.connect_changed(move |entry| {
+            me.borrow().new_name.connect_changed(move |entry| {
                 let txt = entry.get_text();
                 if txt.is_some() && !txt.unwrap().is_empty() {
-                    me_too.add_button.set_sensitive(true);
+                    me_too.borrow().add_button.set_sensitive(true);
                 } else {
-                    me_too.add_button.set_sensitive(false);
+                    me_too.borrow().add_button.set_sensitive(false);
                 }
             });
         }
 
         {
             let me_too = me.clone();
-            me.show_password.connect_toggled(move |check| {
+            me.borrow().show_password.connect_toggled(move |check| {
                 let show = check.get_active();
-                me_too.new_password.set_visibility(show);
+                me_too.borrow().new_password.set_visibility(show);
             });
         }
 
-        Ok(me)
+        me
 
     }
 
     pub fn show(&self) {
         self.window.show_all();
+    }
+
+    pub fn set_vault(&mut self, vault: Vault) {
+        self.vault = Some(vault);
+        // TODO refresh UI for entries
     }
 
 }

@@ -19,10 +19,12 @@ extern crate chrono;
 extern crate sha2;
 extern crate rand;
 extern crate char_iter;
+extern crate xdg;
 
 mod ui;
 mod model;
 mod util;
+mod launcher;
 
 use gtk::Application;
 use gio::APPLICATION_FLAGS_NONE;
@@ -33,20 +35,17 @@ use ui::App;
 pub static DATADIR: &'static str = include!("datadir.in");
 
 fn main() {
+
     match Application::new("org.gnieh.Repassync", APPLICATION_FLAGS_NONE) {
         Ok(app) => {
             // register this application as the default one for the process
             app.set_default();
             // build the application gui
             app.connect_activate(|app| {
-                match App::new(&app) {
-                    Ok(rep_app) => {
-                        rep_app.show();
-                    },
-                    Err(e) => {
-                        panic!("Unable to create the GUI: {:}", e)
-                    }
-                }
+                let rep_app = App::new(&app);
+                rep_app.borrow().show();
+                // start launcher thread
+                launcher::launch(rep_app);
             });
 
             // Run GTK application

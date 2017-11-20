@@ -12,16 +12,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use chrono::prelude::*;
 use std::collections::{HashSet, HashMap};
-use sha2::{Sha256, Digest};
-use std::collections::LinkedList;
-use std::rc::{Rc, Weak};
-use std::cell::RefCell;
 
 #[derive(Debug, Clone)]
 pub struct Vault {
     owner: String,
-    entries: RefCell<HashMap<String, Rc<Entry>>>,
-    history: RefCell<LinkedList<Change>>
+    entries: HashMap<String, Entry>
 }
 
 impl Vault {
@@ -29,16 +24,13 @@ impl Vault {
     pub fn new(owner: String) -> Vault {
         Vault {
             owner: owner,
-            entries: RefCell::new(HashMap::new()),
-            history: RefCell::new(LinkedList::new())
+            entries: HashMap::new(),
         }
     }
 
-    // TODO when PR#45870 is released, transform `me` to `self`
-    pub fn add_entry(me: Rc<Self>, name: String, password: String) -> Rc<Entry> {
-        let entry = Rc::new(Entry::new(name.clone(), password));
-        *entry.vault.borrow_mut() = Rc::downgrade(&me);
-        me.entries.borrow_mut().insert(name, entry.clone());
+    pub fn add_entry(&mut self, name: String, password: String) -> Entry {
+        let entry = Entry::new(name.clone(), password);
+        self.entries.insert(name, entry.clone());
         entry
     }
 
@@ -46,7 +38,6 @@ impl Vault {
 
 #[derive(Debug, Clone)]
 pub struct Entry {
-    vault: RefCell<Weak<Vault>>,
     pub name: String,
     password: String,
     pub comment: Option<String>,
@@ -62,7 +53,6 @@ impl Entry {
     fn new(name: String, password: String) -> Entry {
         let created = Utc::now();
         return Entry {
-            vault: RefCell::new(Weak::new()),
             name: name,
             password: password,
             comment: None,
@@ -74,52 +64,4 @@ impl Entry {
         }
     }
 
-    // TODO when PR#45870 is released, transform `me` to `self`
-    pub fn new_password(mut me: Rc<Self>, author: String, password: String) -> Rc<Entry> {
-
-        let date = Utc::now();
-
-        let mut new_entry = Rc::get_mut(&mut me).unwrap().clone();
-        let old_pass = new_entry.password;
-        new_entry.password = password;
-
-        // compute the id of the change
-        // it is the sha256 of the concatenation of:
-        //  - the author
-        //  - the old password
-        //  - the new password
-        //  - the modification date in RFC3339 format
-        //  - the id of the parent change (if any)
-        let mut hasher = Sha256::default();
-        hasher.input(author.as_bytes());
-        hasher.input(old_pass.as_bytes());
-        hasher.input(&new_entry.password.as_bytes());
-        hasher.input(date.to_rfc3339().as_bytes());
-        // the parent change is the front one
-        // in the history if any
-        //if let Some(&Change { ref id, .. }) = new_entry.history.front() {
-        //    hasher.input(id.as_bytes())
-        //}
-
-        let mut change_id = String::new();
-        change_id.push_str(&format!("{:x}", hasher.result()));
-
-        //new_entry.history.push_front(Change {
-        //    author: author,
-        //    date: date,
-        //    id: change_id,
-        //    old_password: old_pass
-        //});
-        new_entry.last_modified = date;
-        return Rc::new(new_entry);
-    }
-
-}
-
-#[derive(Debug, Clone)]
-pub struct Change {
-    pub id: String,
-    pub date: DateTime<Utc>,
-    old_password: String,
-    pub author: String,
 }
