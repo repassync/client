@@ -28,8 +28,11 @@ use glib;
 use model::Vault;
 use util::PasswordGenerator;
 
+use xdg;
+
 pub struct App {
     window: ApplicationWindow,
+    new_entry_button: MenuButton,
     new_name: Entry,
     new_password: Entry,
     show_password: CheckButton,
@@ -61,6 +64,9 @@ impl App {
 
         let add_button: Button = builder.get_object("add-button").unwrap();
 
+        let new_entry_button: MenuButton = builder.get_object("add-toggle-button").unwrap();
+        new_entry_button.set_sensitive(false);
+
         let new_password: Entry = builder.get_object("new-password").unwrap();
         let show_password: CheckButton = builder.get_object("show-password").unwrap();
 
@@ -69,12 +75,22 @@ impl App {
         window.set_default_size(800, 600);
         window.set_position(WindowPosition::Center);
 
+        let create_vault = CreateVault::new();
+        window.add(&create_vault.ui);
+
         let password_generator = GeneratorUI::new(new_password.clone());
         let expander: Expander = builder.get_object("add-password-options").unwrap();
         expander.add(&password_generator.generator_ui);
 
+        let xdg_dirs = xdg::BaseDirectories::with_prefix("repassync").unwrap();
+        match xdg_dirs.find_data_file("repassync.vault") {
+            Some(f) => {},
+            None => {}
+        }
+
         let app = App {
             window,
+            new_entry_button,
             new_name,
             new_password,
             show_password,
@@ -234,4 +250,120 @@ impl GenThread {
 
         GenThread { password_channel: rx }
     }
+}
+
+struct CreateVault {
+    ui: Box,
+    passphrase: Entry,
+    show_passphrase: CheckButton,
+    passphrase_confirm: Entry,
+    level: LevelBar,
+    confirm_hint: Label,
+    cancel: Button,
+    create: Button
+}
+
+impl CreateVault {
+
+    fn new() -> Self {
+        let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/CreateVault.glade");
+
+        let ui: Box = builder.get_object("create-vault-box").unwrap();
+        let passphrase: Entry = builder.get_object("create-vault-password-1").unwrap();
+        let show_passphrase: CheckButton = builder.get_object("create-vault-show-password").unwrap();
+        let passphrase_confirm: Entry = builder.get_object("create-vault-password-2").unwrap();
+        let level: LevelBar = builder.get_object("create-vault-password-strength").unwrap();
+        let confirm_hint: Label = builder.get_object("create-vault-confirm-hint").unwrap();
+        let cancel: Button = builder.get_object("create-vault-cancel").unwrap();
+        let create: Button = builder.get_object("create-vault-create").unwrap();
+
+        {
+            let show_passphrase_bis = show_passphrase.clone();
+            let passphrase_bis = passphrase.clone();
+            show_passphrase_bis.connect_toggled(move |toggle| {
+                let show = toggle.get_active();
+                passphrase_bis.set_visibility(show);
+            });
+        }
+
+        {
+            let passphrase_bis = passphrase.clone();
+            let passphrase_confirm_bis = passphrase_confirm.clone();
+            let confirm_hint_bis = confirm_hint.clone();
+            let create_bis = create.clone();
+            passphrase_bis.connect_changed(move |entry| {
+                let value = entry.get_text();
+                let confirm_value = passphrase_confirm_bis.get_text();
+                match (value, confirm_value) {
+                    (Some(value), Some(confirm_value)) => {
+                        if value.len() > 0 && value == confirm_value {
+                            create_bis.set_sensitive(true);
+                            confirm_hint_bis.set_opacity(0.0);
+                        } else {
+                            create_bis.set_sensitive(false);
+                            if confirm_value.len() > 0 {
+                                confirm_hint_bis.set_opacity(1.0);
+                            } else {
+                                confirm_hint_bis.set_opacity(0.0);
+                            }
+                        }
+                    },
+                    (_, confirm_value) => {
+                        create_bis.set_sensitive(false);
+                        if confirm_value.is_some() && confirm_value.unwrap().len() > 0 {
+                            confirm_hint_bis.set_opacity(1.0);
+                        } else {
+                            confirm_hint_bis.set_opacity(0.0);
+                        }
+                    }
+                }
+            });
+        }
+
+        {
+            let passphrase_bis = passphrase.clone();
+            let passphrase_confirm_bis = passphrase_confirm.clone();
+            let confirm_hint_bis = confirm_hint.clone();
+            let create_bis = create.clone();
+            passphrase_confirm_bis.connect_changed(move |entry| {
+                let confirm_value = entry.get_text();
+                let value = passphrase_bis.get_text();
+                match (value, confirm_value) {
+                    (Some(value), Some(confirm_value)) => {
+                        if value.len() > 0 && value == confirm_value {
+                            create_bis.set_sensitive(true);
+                            confirm_hint_bis.set_opacity(0.0);
+                        } else {
+                            create_bis.set_sensitive(false);
+                            if confirm_value.len() > 0 {
+                                confirm_hint_bis.set_opacity(1.0);
+                            } else {
+                                confirm_hint_bis.set_opacity(0.0);
+                            }
+                        }
+                    },
+                    (_, confirm_value) => {
+                        create_bis.set_sensitive(false);
+                        if confirm_value.is_some() && confirm_value.unwrap().len() > 0 {
+                            confirm_hint_bis.set_opacity(1.0);
+                        } else {
+                            confirm_hint_bis.set_opacity(0.0);
+                        }
+                    }
+                }
+            });
+        }
+
+        CreateVault {
+            ui,
+            passphrase,
+            show_passphrase,
+            passphrase_confirm,
+            level,
+            confirm_hint,
+            cancel,
+            create
+        }
+    }
+
 }

@@ -64,7 +64,6 @@ impl LaunchThread {
 
             let vault =
                 xdg_dirs.find_data_file("repassync.vault").map(|f| {
-                    println!("{:?}", f);
                     Vault::new(name)
                 });
             tx.send(vault).unwrap();

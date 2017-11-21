@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/org/gnieh/Repassync">
     <file compressed="true">ui/HeaderBar.glade</file>
+    <file compressed="true">ui/CreateVault.glade</file>
     <file compressed="true">ui/PasswordGenerator.glade</file>
   </gresource>
 </gresources>

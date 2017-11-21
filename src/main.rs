@@ -24,7 +24,6 @@ extern crate xdg;
 mod ui;
 mod model;
 mod util;
-mod launcher;
 
 use gtk::Application;
 use gio::APPLICATION_FLAGS_NONE;
@@ -44,8 +43,6 @@ fn main() {
             app.connect_activate(|app| {
                 let rep_app = App::new(&app);
                 rep_app.borrow().show();
-                // start launcher thread
-                launcher::launch(rep_app);
             });
 
             // Run GTK application
