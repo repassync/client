@@ -14,16 +14,21 @@ extern crate gtk;
 extern crate gio;
 extern crate glib;
 
-extern crate gpgme;
 extern crate chrono;
-extern crate sha2;
 extern crate rand;
 extern crate char_iter;
 extern crate xdg;
+extern crate secstr;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate rmp;
+extern crate rmp_serde as msgpack;
 
 mod ui;
 mod model;
 mod util;
+mod io;
 
 use gtk::Application;
 use gio::APPLICATION_FLAGS_NONE;
