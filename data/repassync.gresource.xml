@@ -4,5 +4,6 @@
     <file compressed="true">ui/HeaderBar.glade</file>
     <file compressed="true">ui/CreateVault.glade</file>
     <file compressed="true">ui/PasswordGenerator.glade</file>
+    <file compressed="true">ui/BusyVault.glade</file>
   </gresource>
 </gresources>
