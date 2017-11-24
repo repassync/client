@@ -30,13 +30,13 @@ use util::{PasswordGenerator, check_password_quality};
 
 use xdg;
 
+use pwquality::PWQuality;
+
 pub struct App {
     window: ApplicationWindow,
     new_entry_button: MenuButton,
-    new_name: Entry,
-    new_password: Entry,
-    show_password: CheckButton,
-    add_button: Button,
+
+    pwq: PWQuality,
 
     vault: Option<Vault>
 }
@@ -55,20 +55,15 @@ impl App {
             }
         }
 
+        let pwq = PWQuality::new();
+
         let window = ApplicationWindow::new(&app);
 
         let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/HeaderBar.glade");
         let header: HeaderBar = builder.get_object("header").unwrap();
 
-        let new_name: Entry = builder.get_object("new-name").unwrap();
-
-        let add_button: Button = builder.get_object("add-button").unwrap();
-
         let new_entry_button: MenuButton = builder.get_object("add-toggle-button").unwrap();
         new_entry_button.set_sensitive(false);
-
-        let new_password: Entry = builder.get_object("new-password").unwrap();
-        let show_password: CheckButton = builder.get_object("show-password").unwrap();
 
         window.set_titlebar(&header);
 
@@ -78,9 +73,8 @@ impl App {
         let create_vault = create_vault_ui();
         window.add(&create_vault);
 
-        let password_generator = GeneratorUI::new(new_password.clone());
-        let expander: Expander = builder.get_object("add-password-options").unwrap();
-        expander.add(&password_generator.generator_ui);
+        let create_entry = create_entry_ui();
+        new_entry_button.set_popover(&create_entry);
 
         let xdg_dirs = xdg::BaseDirectories::with_prefix("repassync").unwrap();
         match xdg_dirs.find_data_file("repassync.vault") {
@@ -91,34 +85,13 @@ impl App {
         let app = App {
             window,
             new_entry_button,
-            new_name,
-            new_password,
-            show_password,
-            add_button,
+
+            pwq,
 
             vault: None
         };
 
         let me = Rc::new(RefCell::new(app));
-        {
-            let me_too = me.clone();
-            me.borrow().new_name.connect_changed(move |entry| {
-                let txt = entry.get_text();
-                if txt.is_some() && !txt.unwrap().is_empty() {
-                    me_too.borrow().add_button.set_sensitive(true);
-                } else {
-                    me_too.borrow().add_button.set_sensitive(false);
-                }
-            });
-        }
-
-        {
-            let me_too = me.clone();
-            me.borrow().show_password.connect_toggled(move |check| {
-                let show = check.get_active();
-                me_too.borrow().new_password.set_visibility(show);
-            });
-        }
 
         me
 
@@ -141,7 +114,7 @@ thread_local!(
 
 #[derive(Clone)]
 struct GeneratorUI {
-    generator_ui: Box,
+    ui: Box,
     length: SpinButton,
     use_lower: CheckButton,
     use_upper: CheckButton,
@@ -151,76 +124,13 @@ struct GeneratorUI {
     password_field: Entry
 }
 
-impl GeneratorUI {
-
-    fn new(password_field: Entry) -> GeneratorUI {
-        let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/PasswordGenerator.glade");
-
-        let generator_ui: Box = builder.get_object("password-generator-options-box").unwrap();
-        let ui_bis = generator_ui.clone();
-
-        let length: SpinButton = builder.get_object("password-generator-length").unwrap();
-        let use_lower: CheckButton = builder.get_object("password-generator-use-lower").unwrap();
-        let use_upper: CheckButton = builder.get_object("password-generator-use-upper").unwrap();
-        let use_numbers: CheckButton = builder.get_object("password-generator-use-numbers").unwrap();
-        let use_special: CheckButton = builder.get_object("password-generator-use-special").unwrap();
-
-        let generate_button: Button = builder.get_object("password-generator-generate-button").unwrap();
-        let spinner: Spinner = builder.get_object("password-generator-working").unwrap();
-
-        let length_too = length.clone();
-        let use_lower_too = use_lower.clone();
-        let use_upper_too = use_upper.clone();
-        let use_numbers_too = use_numbers.clone();
-        let use_special_too = use_special.clone();
-        let spinner_bis = spinner.clone();
-
-        let me = GeneratorUI {
-            generator_ui,
-            length,
-            use_lower,
-            use_upper,
-            use_numbers,
-            use_special,
-            spinner,
-            password_field
-        };
-
-        {
-            let me_bis = me.clone();
-            generate_button.connect_clicked(move |_| {
-                ui_bis.set_sensitive(false);
-                spinner_bis.set_visible(true);
-                spinner_bis.start();
-
-                let length = length_too.get_value_as_int() as usize;
-                let use_lower = use_lower_too.get_active();
-                let use_upper = use_upper_too.get_active();
-                let use_numbers = use_numbers_too.get_active();
-                let use_special = use_special_too.get_active();
-
-                let me_ter = me_bis.clone();
-                GEN.with(move |gen| {
-                    *gen.borrow_mut() =
-                        Some((me_ter, GenThread::new(length, use_lower, use_upper, use_numbers, use_special, || { glib::idle_add(generated); })));
-                });
-            });
-        }
-
-        me
-
-    }
-
-}
-
 fn generated() -> Continue {
     GEN.with(move |gen| {
         if let Some((ref ui, ref gen_thread)) = *gen.borrow() {
             let pass = gen_thread.password_channel.recv().unwrap();
             ui.password_field.set_text(pass.as_str());
             ui.spinner.stop();
-            ui.spinner.set_visible(false);
-            ui.generator_ui.set_sensitive(true);
+            ui.ui.set_sensitive(true);
         }
         *gen.borrow_mut() = None;
     });
@@ -262,6 +172,84 @@ struct CreateVault {
     create: Button
 }
 
+fn create_entry_ui() -> Popover {
+    let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/CreateEntry.glade");
+
+    let ui: Popover = builder.get_object("add-popover").unwrap();
+    let content: Box = builder.get_object("add-box").unwrap();
+    let new_name: Entry = builder.get_object("new-name").unwrap();
+    let add_button: Button = builder.get_object("add-button").unwrap();
+    let password_field: Entry = builder.get_object("new-password").unwrap();
+    let show_password: CheckButton = builder.get_object("show-password").unwrap();
+
+    let length: SpinButton = builder.get_object("password-generator-length").unwrap();
+    let use_lower: CheckButton = builder.get_object("password-generator-use-lower").unwrap();
+    let use_upper: CheckButton = builder.get_object("password-generator-use-upper").unwrap();
+    let use_numbers: CheckButton = builder.get_object("password-generator-use-numbers").unwrap();
+    let use_special: CheckButton = builder.get_object("password-generator-use-special").unwrap();
+
+    let generate_button: Button = builder.get_object("password-generator-generate-button").unwrap();
+    let spinner: Spinner = builder.get_object("password-generator-working").unwrap();
+
+    {
+        let ui_bis = ui.clone();
+        let length_bis = length.clone();
+        let use_lower_bis = use_lower.clone();
+        let use_upper_bis = use_upper.clone();
+        let use_numbers_bis = use_numbers.clone();
+        let use_special_bis = use_special.clone();
+        let password_field_bis = password_field.clone();
+
+        generate_button.connect_clicked(move |_| {
+            content.set_sensitive(false);
+            spinner.start();
+
+            let length = length_bis.get_value_as_int() as usize;
+            let use_lower = use_lower_bis.get_active();
+            let use_upper = use_upper_bis.get_active();
+            let use_numbers = use_numbers_bis.get_active();
+            let use_special = use_special_bis.get_active();
+
+            let me = GeneratorUI {
+                ui: content.clone(),
+                length: length_bis.clone(),
+                use_lower: use_lower_bis.clone(),
+                use_upper: use_upper_bis.clone(),
+                use_numbers: use_numbers_bis.clone(),
+                use_special: use_special_bis.clone(),
+                spinner: spinner.clone(),
+                password_field: password_field_bis.clone()
+            };
+
+            GEN.with(move |gen| {
+                *gen.borrow_mut() =
+                    Some((me, GenThread::new(length, use_lower, use_upper, use_numbers, use_special, || { glib::idle_add(generated); })));
+            });
+        });
+    }
+
+    {
+        new_name.connect_changed(move |entry| {
+            let txt = entry.get_text();
+            if txt.is_some() && !txt.unwrap().is_empty() {
+                add_button.set_sensitive(true);
+            } else {
+                add_button.set_sensitive(false);
+            }
+        });
+    }
+
+    {
+        let password_field_bis = password_field.clone();
+        show_password.connect_toggled(move |check| {
+            let show = check.get_active();
+            password_field_bis.set_visibility(show);
+        });
+    }
+
+    ui
+}
+
 fn create_vault_ui() -> Box {
     let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/CreateVault.glade");
 
@@ -272,6 +260,13 @@ fn create_vault_ui() -> Box {
     let level: LevelBar = builder.get_object("create-vault-password-strength").unwrap();
     let confirm_hint: Label = builder.get_object("create-vault-confirm-hint").unwrap();
     let create: Button = builder.get_object("create-vault-create").unwrap();
+
+    let pwq = PWQuality::new();
+    pwq.set_min_length(10);
+    pwq.set_digit_credit(-1);
+    pwq.set_lowercase_credit(-1);
+    pwq.set_uppercase_credit(-1);
+    pwq.set_other_credit(-1);
 
     {
         let show_passphrase_bis = show_passphrase.clone();
