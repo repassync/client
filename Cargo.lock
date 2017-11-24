@@ -9,7 +9,6 @@ dependencies = [
  "glib 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gpgme 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gtk 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwquality 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "rmp 0.8.7 (registry+https://github.com/rust-lang/crates.io-index)",

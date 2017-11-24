@@ -10,22 +10,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-extern crate libc;
-
-use self::libc::{c_char, c_void};
-
-use std::ffi::CString;
-
-use std::ptr::{null, null_mut};
-
-static PWQ_SETTING_MIN_LENGTH: i32 = 3;
-
-#[link(name = "pwquality")]
-extern {
-    fn pwquality_default_settings() -> *const u8;
-    fn pwquality_check(pwq: *const u8, password: *const c_char, oldpassword: *const c_char, user: *const c_char, auxerror: *mut c_void) -> i32;
-    fn pwquality_set_int_value(pwq: *const u8, setting: i32, value: i32) -> i32;
-}
+use pwquality::PWQuality;
 
 #[derive(Clone, Debug)]
 pub enum Quality {
@@ -37,13 +22,11 @@ pub enum Quality {
 }
 
 pub fn check_password_quality(password: &str) -> Quality {
-    let c_password = CString::new(password).unwrap();
-    let score =
-        unsafe {
-            let settings = pwquality_default_settings();
-            pwquality_set_int_value(settings, PWQ_SETTING_MIN_LENGTH, 10);
-            pwquality_check(settings, c_password.as_ptr(), null(), null(), null_mut())
-        };
+
+    let pwq = PWQuality::new();
+    pwq.set_min_length(10);
+
+    let score = pwq.check(password.to_owned(), None, None).unwrap_or_else(|_| -1);
 
     let length = password.len();
 
