@@ -25,7 +25,7 @@ pub fn create_entry_ui() -> Popover {
     let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/CreateEntry.glade");
 
     let ui: Popover = builder.get_object("add-popover").unwrap();
-    let content: Box = builder.get_object("add-box").unwrap();
+    let content: Grid = builder.get_object("add-grid").unwrap();
     let new_name: Entry = builder.get_object("new-name").unwrap();
     let add_button: Button = builder.get_object("add-button").unwrap();
     let password_field: Entry = builder.get_object("new-password").unwrap();
@@ -37,8 +37,27 @@ pub fn create_entry_ui() -> Popover {
     let use_numbers: CheckButton = builder.get_object("password-generator-use-numbers").unwrap();
     let use_special: CheckButton = builder.get_object("password-generator-use-special").unwrap();
 
+    let generate_enabled: CheckButton = builder.get_object("password-generator-enable").unwrap();
     let generate_button: Button = builder.get_object("password-generator-generate-button").unwrap();
     let spinner: Spinner = builder.get_object("password-generator-working").unwrap();
+
+    {
+        let length_bis = length.clone();
+        let use_lower_bis = use_lower.clone();
+        let use_upper_bis = use_upper.clone();
+        let use_numbers_bis = use_numbers.clone();
+        let use_special_bis = use_special.clone();
+        let generate_button_bis = generate_button.clone();
+        generate_enabled.connect_toggled(move |toggle| {
+            let gen = toggle.get_active();
+            length_bis.set_sensitive(gen);
+            use_lower_bis.set_sensitive(gen);
+            use_upper_bis.set_sensitive(gen);
+            use_numbers_bis.set_sensitive(gen);
+            use_special_bis.set_sensitive(gen);
+            generate_button_bis.set_sensitive(gen);
+        });
+    }
 
     {
         let ui_bis = ui.clone();
@@ -105,7 +124,7 @@ thread_local!(
 
 #[derive(Clone)]
 struct GeneratorUI {
-    ui: Box,
+    ui: Grid,
     length: SpinButton,
     use_lower: CheckButton,
     use_upper: CheckButton,

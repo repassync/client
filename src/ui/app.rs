@@ -65,7 +65,7 @@ impl App {
 
         let create_entry = create_entry_ui();
         new_entry_button.set_popover(&create_entry);
-        new_entry_button.set_sensitive(false);
+        //new_entry_button.set_sensitive(false);
 
         let xdg_dirs = xdg::BaseDirectories::with_prefix("repassync").unwrap();
         match xdg_dirs.find_data_file("repassync.vault") {
