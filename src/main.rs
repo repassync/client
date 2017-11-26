@@ -22,8 +22,9 @@ extern crate secstr;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate rmp;
-extern crate rmp_serde as msgpack;
+extern crate serde_bytes;
+extern crate serde_cbor;
+extern crate openssl;
 extern crate pwquality;
 
 mod ui;

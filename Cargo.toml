@@ -4,9 +4,6 @@ version = "0.1.0"
 authors = ["Lucas Satabin <lucas.satabin@gnieh.org>"]
 
 [dependencies]
-gpgme = "0.6"
-chrono = "0.4"
-sha2 = "0.6"
 rand = "0.3"
 char-iter = "0.1"
 xdg = "2.1"
@@ -14,9 +11,17 @@ secstr = "0.3"
 byteorder = "1.1"
 serde = "1.0"
 serde_derive = "1.0"
-rmp = "0.8"
-rmp-serde = "0.13"
+serde_cbor = "0.6"
+serde_bytes = "0.10"
 pwquality = "0.1"
+
+[dependencies.chrono]
+version = "0.4"
+features = ["serde"]
+
+[dependencies.openssl]
+version = "0.9"
+features = ["v110"]
 
 [dependencies.gtk]
 version = "0.2.0"
