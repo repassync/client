@@ -3,6 +3,9 @@ name = "repassync"
 version = "0.1.0"
 authors = ["Lucas Satabin <lucas.satabin@gnieh.org>"]
 
+[build-dependencies]
+pkg-config = "0.3"
+
 [dependencies]
 rand = "0.3"
 char-iter = "0.1"
@@ -13,7 +16,7 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_cbor = "0.6"
 serde_bytes = "0.10"
-pwquality = "0.1"
+pwquality = "0.2"
 
 [dependencies.chrono]
 version = "0.4"

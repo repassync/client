@@ -38,7 +38,7 @@ use gio::ApplicationExt;
 
 use ui::App;
 
-pub static DATADIR: &'static str = include!("datadir.in");
+pub static DATADIR: &'static str = include!(concat!(env!("OUT_DIR"), "/datadir.in"));
 
 fn main() {
 
