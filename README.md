@@ -13,4 +13,5 @@ To build repassync client you will need following dependencies:
 
 ## Building
 
-run `init-dev.sh` to compile the resources. Then run `cargo build` or `cargo run`.
+Run `cargo build` or `cargo run`.
+These commands will compile the resources in `data` if they changed.
