@@ -4,6 +4,10 @@
     <file compressed="true">ui/HeaderBar.glade</file>
     <file compressed="true">ui/CreateVault.glade</file>
     <file compressed="true">ui/CreateEntry.glade</file>
+    <file compressed="true">ui/MainWindow.glade</file>
     <file compressed="true">ui/BusyVault.glade</file>
+    <file compressed="true">ui/PasswordWidget.glade</file>
+    <file compressed="true">ui/EmptySearch.glade</file>
+    <file compressed="true">ui/EmptyVault.glade</file>
   </gresource>
 </gresources>
