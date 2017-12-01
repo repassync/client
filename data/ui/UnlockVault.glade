@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.1 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkBox" id="unlock-vault-box">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="halign">center</property>
+    <property name="valign">center</property>
+    <property name="orientation">vertical</property>
+    <property name="spacing">8</property>
+    <child>
+      <object class="GtkLabel" id="unlock-vault-label">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="hexpand">False</property>
+        <property name="label" translatable="yes">Unlock vault</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+        </attributes>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkGrid" id="create-vault-grid">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="row_spacing">8</property>
+        <property name="column_spacing">6</property>
+        <child>
+          <object class="GtkLabel" id="unlock-vault-password-label">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">end</property>
+            <property name="hexpand">False</property>
+            <property name="label" translatable="yes">Passphrase</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="unlock-vault-password">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="visibility">False</property>
+            <property name="activates_default">True</property>
+            <property name="width_chars">50</property>
+            <property name="input_purpose">password</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="unlock-vault-error">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="opacity">0</property>
+            <property name="label" translatable="yes">Your vault could not be unlocked. Please check that your passphrase is correct.</property>
+            <attributes>
+              <attribute name="scale" value="0.80000000000000004"/>
+            </attributes>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="unlock-vault-buttons">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkButton" id="unlock-vault-unlock">
+                <property name="label" translatable="yes">Unlock</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
+</interface>

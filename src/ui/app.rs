@@ -25,12 +25,17 @@ use model::Vault;
 
 use xdg;
 
-use ui::vault::create_vault_ui;
+use ui::vault::{create_vault_ui, create_unlock_vault_ui};
 use ui::entry::create_entry_ui;
+use ui::main_window::create_main_window_ui;
+use ui::views::create_views;
+
+use io::file::EncryptedVaultFile;
 
 pub struct App {
     window: ApplicationWindow,
 
+    file: Option<EncryptedVaultFile>,
     vault: Option<Vault>
 }
 
@@ -60,22 +65,47 @@ impl App {
         window.set_default_size(800, 600);
         window.set_position(WindowPosition::Center);
 
-        let create_vault = create_vault_ui();
-        window.add(&create_vault);
-
         let create_entry = create_entry_ui();
         new_entry_button.set_popover(&create_entry);
-        //new_entry_button.set_sensitive(false);
+        new_entry_button.set_sensitive(false);
+
+        let main_window = create_main_window_ui();
+        window.add(&main_window.ui);
+
+        create_views(&main_window.stack);
+
+        let create_vault = create_vault_ui();
+        main_window.stack.add_named(&create_vault, "create-vault");
+
+        let unlock_vault = create_unlock_vault_ui();
+        main_window.stack.add_named(&unlock_vault, "unlock-vault");
 
         let xdg_dirs = xdg::BaseDirectories::with_prefix("repassync").unwrap();
-        match xdg_dirs.find_data_file("repassync.vault") {
-            Some(f) => {},
-            None => {}
-        }
+        let file =
+            match xdg_dirs.find_data_file("repassync.vault") {
+                Some(f) => {
+                    match EncryptedVaultFile::from_file(f) {
+                        Ok(f) => {
+                            main_window.stack.set_visible_child_name("unlock-vault");
+                            Some(f)
+                        },
+                        Err(e) => {
+                            main_window.stack.set_visible_child_name("error-vault");
+                            None
+                        }
+                    }
+                },
+                None => {
+                    main_window.stack.set_visible_child_name("create-vault");
+                    None
+                }
+
+            };
 
         let app = App {
             window,
 
+            file,
             vault: None
         };
 

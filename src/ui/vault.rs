@@ -111,3 +111,31 @@ pub fn create_vault_ui() -> Box {
     ui
 
 }
+
+pub fn create_unlock_vault_ui() -> Box {
+
+    let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/UnlockVault.glade");
+
+    let ui: Box = builder.get_object("unlock-vault-box").unwrap();
+    let password: Entry = builder.get_object("unlock-vault-password").unwrap();
+    let error: Label = builder.get_object("unlock-vault-error").unwrap();
+    let unlock: Button = builder.get_object("unlock-vault-unlock").unwrap();
+
+    {
+        let password_bis = password.clone();
+        let unlock_bis = unlock.clone();
+        password_bis.connect_changed(move |pwd| {
+            let value = pwd.get_text();
+            unlock_bis.set_sensitive(value.map(|t| t.len() > 0).unwrap_or_else(|| false));
+        });
+    }
+
+    {
+        let password_bis = password.clone();
+        let unlock_bis = unlock.clone();
+        unlock_bis.connect_clicked(move |b| {
+        });
+    }
+
+    ui
+}

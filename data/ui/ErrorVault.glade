@@ -2,20 +2,24 @@
 <!-- Generated with glade 3.20.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkBox" id="busy-box">
+  <object class="GtkBox" id="error-box">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="halign">center</property>
     <property name="valign">center</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
     <property name="orientation">vertical</property>
     <property name="spacing">12</property>
     <child>
-      <object class="GtkSpinner" id="busy-spinner">
-        <property name="width_request">128</property>
-        <property name="height_request">128</property>
+      <object class="GtkImage">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="active">True</property>
+        <property name="pixel_size">128</property>
+        <property name="icon_name">dialog-error-symbolic</property>
+        <style>
+          <class name="dim-label"/>
+        </style>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -27,7 +31,7 @@
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Your vault is busy</property>
+        <property name="label" translatable="yes">An error occured</property>
         <attributes>
           <attribute name="weight" value="bold"/>
           <attribute name="scale" value="1.4399999999999999"/>
@@ -43,7 +47,7 @@
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Please wait until action is finished</property>
+        <property name="label" translatable="yes">Your vault file is probably corrupted.</property>
         <style>
           <class name="dim-label"/>
         </style>
