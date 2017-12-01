@@ -26,6 +26,9 @@ extern crate serde_bytes;
 extern crate serde_cbor;
 extern crate openssl;
 extern crate pwquality;
+extern crate env_logger;
+#[macro_use]
+extern crate log;
 
 mod ui;
 mod model;
@@ -42,6 +45,8 @@ pub static DATADIR: &'static str = include!(concat!(env!("OUT_DIR"), "/datadir.i
 
 fn main() {
 
+    env_logger::init().expect("Failed to initialize logging");
+
     match Application::new("org.gnieh.Repassync", APPLICATION_FLAGS_NONE) {
         Ok(app) => {
             // register this application as the default one for the process
@@ -57,7 +62,7 @@ fn main() {
 
         },
         Err(e) => {
-            panic!("Failed to initialize GTK: {}", e);
+            error!("Failed to initialize GTK: {}", e);
         }
     }
 

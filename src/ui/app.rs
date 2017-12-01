@@ -14,6 +14,8 @@ use DATADIR;
 
 use std::path::Path;
 
+use std::process;
+
 use std::rc::Rc;
 use std::cell::RefCell;
 
@@ -49,7 +51,8 @@ impl App {
                 resources_register(&res);
             },
             Err(e) => {
-                panic!("Unable to create application: {}", e);
+                error!("Unable to create application: {}", e);
+                process::exit(1);
             }
         }
 
@@ -90,6 +93,7 @@ impl App {
                             Some(f)
                         },
                         Err(e) => {
+                            error!("Unable to open vault file: {}", e);
                             main_window.stack.set_visible_child_name("error-vault");
                             None
                         }

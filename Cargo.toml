@@ -17,6 +17,8 @@ serde_derive = "1.0"
 serde_cbor = "0.6"
 serde_bytes = "0.10"
 pwquality = "0.2"
+env_logger = "0.4"
+log = "0.3"
 
 [dependencies.chrono]
 version = "0.4"
