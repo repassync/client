@@ -36,6 +36,10 @@ impl Vault {
         entry
     }
 
+    pub fn has_entry(&self, name: &String) -> bool {
+        self.entries.contains_key(name)
+    }
+
 }
 
 #[derive(Debug, Clone)]

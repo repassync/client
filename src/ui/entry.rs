@@ -10,18 +10,22 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+use std::rc::Rc;
 use std::cell::RefCell;
 
 use std::thread;
 use std::sync::mpsc;
 
+use secstr::SecStr;
+
 use gtk::prelude::*;
 use gtk::*;
 use glib;
 
+use ui::App;
 use util::PasswordGenerator;
 
-pub fn create_entry_ui() -> Popover {
+pub fn create_entry_ui(app: Rc<RefCell<App>>) -> Popover {
     let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/CreateEntry.glade");
 
     let ui: Popover = builder.get_object("add-popover").unwrap();
@@ -30,6 +34,7 @@ pub fn create_entry_ui() -> Popover {
     let add_button: Button = builder.get_object("add-button").unwrap();
     let password_field: Entry = builder.get_object("new-password").unwrap();
     let show_password: CheckButton = builder.get_object("show-password").unwrap();
+    let already_exist: Label = builder.get_object("add-box-already-existing-label").unwrap();
 
     let length: SpinButton = builder.get_object("password-generator-length").unwrap();
     let use_lower: CheckButton = builder.get_object("password-generator-use-lower").unwrap();
@@ -97,12 +102,20 @@ pub fn create_entry_ui() -> Popover {
     }
 
     {
+        let add_button_bis = add_button.clone();
+        let app_bis = app.clone();
         new_name.connect_changed(move |entry| {
-            let txt = entry.get_text();
-            if txt.is_some() && !txt.unwrap().is_empty() {
-                add_button.set_sensitive(true);
+            let txt = entry.get_text().unwrap_or_else(|| "".to_owned());
+            let exists = app_bis.borrow().has_entry(&txt);
+            if exists {
+                already_exist.set_opacity(1.0);
             } else {
-                add_button.set_sensitive(false);
+                already_exist.set_opacity(0.0);
+            }
+            if !txt.is_empty() {
+                add_button_bis.set_sensitive(!exists);
+            } else {
+                add_button_bis.set_sensitive(false);
             }
         });
     }
@@ -112,6 +125,21 @@ pub fn create_entry_ui() -> Popover {
         show_password.connect_toggled(move |check| {
             let show = check.get_active();
             password_field_bis.set_visibility(show);
+        });
+    }
+
+    {
+        let ui_bis = ui.clone();
+        let password_field_bis = password_field.clone();
+        let new_name_bis = new_name.clone();
+        let app_bis = app.clone();
+        add_button.connect_clicked(move |button| {
+            ui_bis.popdown();
+            let name = new_name_bis.get_text().unwrap();
+            let pwd = SecStr::new(password_field_bis.get_text().unwrap_or_else(|| "".to_owned()).into_bytes());
+            new_name_bis.set_text("");
+            password_field_bis.set_text("");
+            app_bis.borrow_mut().add_entry(name, pwd);
         });
     }
 

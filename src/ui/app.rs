@@ -30,6 +30,7 @@ use model::Vault;
 use xdg;
 
 use ui::vault::{create_vault_ui, create_unlock_vault_ui};
+use ui::entry::create_entry_ui;
 use ui::header_bar::{Header, create_header_bar_ui};
 use ui::main_window::{MainWindow, create_main_window_ui};
 use ui::views::create_views;
@@ -78,6 +79,7 @@ impl App {
 
 
         let main_window_bis = main_window.clone();
+        let header_bis = header.clone();
 
         create_views(&main_window.stack);
 
@@ -88,6 +90,10 @@ impl App {
 
             vault: LoadedVault::NoVault
         }));
+
+        let create_entry = create_entry_ui(me.clone());
+        header_bis.new_entry_button.set_popover(&create_entry);
+
 
         let create_vault = create_vault_ui(me.clone());
         main_window_bis.stack.add_named(&create_vault, "create-vault");
@@ -126,6 +132,31 @@ impl App {
     pub fn set_vault(&mut self, vault: Vault, pass: SecStr) {
         self.vault = LoadedVault::UnlockedVault(vault, pass);
         self.refresh();
+    }
+
+    pub fn add_entry(&mut self, name: String, pass: SecStr) {
+        use self::LoadedVault::*;
+        match self.vault {
+            UnlockedVault(ref mut vault, _) => {
+                vault.add_entry(name, pass);
+            },
+            _ => {
+                warn!("Try to add entry to locked or inexistent vault");
+            }
+        }
+    }
+
+    pub fn has_entry(&self, name: &String) -> bool {
+        use self::LoadedVault::*;
+        match self.vault {
+            UnlockedVault(ref vault, _) => {
+                vault.has_entry(name)
+            },
+            _ => {
+                warn!("Try to check entry for locked or inexistent vault");
+                false
+            }
+        }
     }
 
     pub fn refresh(&self) {

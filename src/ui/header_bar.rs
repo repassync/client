@@ -12,8 +12,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use gtk::*;
 
-use ui::entry::create_entry_ui;
-
+#[derive(Clone, Debug)]
 pub struct Header {
     pub new_entry_button: MenuButton,
     pub search_button: ToggleButton,
@@ -28,9 +27,6 @@ pub fn create_header_bar_ui(search_bar: &SearchBar) -> Header {
     let search_button: ToggleButton = builder.get_object("search").unwrap();
 
     stack.set_visible_child_name("empty-bar");
-
-    let create_entry = create_entry_ui();
-    new_entry_button.set_popover(&create_entry);
 
     {
         let search_bar_bis = search_bar.clone();
