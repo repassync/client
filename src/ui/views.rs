@@ -15,6 +15,7 @@ use gtk::*;
 pub fn create_views(stack: &Stack) {
     stack.add_named(&create_empty_view(), "empty-vault");
     stack.add_named(&create_error_view(), "error-vault");
+    stack.add_named(&create_busy_view(), "busy-vault");
     stack.add_named(&create_empty_search_view(), "empty-search");
 }
 

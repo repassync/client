@@ -12,6 +12,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use gtk::*;
 
+#[derive(Clone, Debug)]
 pub struct MainWindow {
     pub ui: Box,
     pub search_bar: SearchBar,

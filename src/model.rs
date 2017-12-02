@@ -13,6 +13,8 @@
 use chrono::prelude::*;
 use std::collections::{HashSet, HashMap};
 
+use secstr::SecStr;
+
 #[derive(Debug, Clone)]
 pub struct Vault {
     owner: String,
@@ -28,7 +30,7 @@ impl Vault {
         }
     }
 
-    pub fn add_entry(&mut self, name: String, password: String) -> Entry {
+    pub fn add_entry(&mut self, name: String, password: SecStr) -> Entry {
         let entry = Entry::new(name.clone(), password);
         self.entries.insert(name, entry.clone());
         entry
@@ -39,7 +41,7 @@ impl Vault {
 #[derive(Debug, Clone)]
 pub struct Entry {
     pub name: String,
-    password: String,
+    password: SecStr,
     pub comment: Option<String>,
     pub user: Option<String>,
     pub uri: Option<String>,
@@ -50,7 +52,7 @@ pub struct Entry {
 
 impl Entry {
 
-    fn new(name: String, password: String) -> Entry {
+    fn new(name: String, password: SecStr) -> Entry {
         let created = Utc::now();
         return Entry {
             name: name,

@@ -15,5 +15,6 @@ pub mod app;
 
 mod vault;
 mod entry;
+mod header_bar;
 mod main_window;
 mod views;

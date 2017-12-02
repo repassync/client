@@ -10,12 +10,25 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+use std::rc::Rc;
+use std::cell::RefCell;
+
+use std::thread;
+use std::sync::mpsc;
+
 use gtk::prelude::*;
 use gtk::*;
+use glib;
+
+use secstr::SecStr;
 
 use util::check_password_quality;
 
-pub fn create_vault_ui() -> Box {
+use ui::App;
+
+use model::Vault;
+
+pub fn create_vault_ui(app: Rc<RefCell<App>>) -> Box {
     let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/CreateVault.glade");
 
     let ui: Box = builder.get_object("create-vault-box").unwrap();
@@ -108,8 +121,54 @@ pub fn create_vault_ui() -> Box {
         });
     }
 
+    {
+        let app_bis = app.clone();
+        create.connect_clicked(move |_| {
+            app_bis.borrow().set_busy();
+            let pass = SecStr::new(passphrase.get_text().unwrap().into_bytes());
+            let app_ter = app_bis.clone();
+            CREATE.with(move |create| {
+                *create.borrow_mut() =
+                    Some((app_ter, CreateThread::new(pass, || { glib::idle_add(created); })));
+            });
+        });
+    }
+
     ui
 
+}
+
+fn created() -> Continue {
+    CREATE.with(move |create| {
+        if let Some((ref app, ref create_thread)) = *create.borrow() {
+            let (vault, pass) = create_thread.vault_channel.recv().unwrap();
+            app.borrow_mut().set_vault(vault, pass);
+        }
+        *create.borrow_mut() = None;
+    });
+    Continue(false)
+}
+
+thread_local!(
+    static CREATE: RefCell<Option<(Rc<RefCell<App>>, CreateThread)>> = RefCell::new(None)
+);
+
+struct CreateThread {
+    vault_channel: mpsc::Receiver<(Vault, SecStr)>
+}
+
+impl CreateThread {
+    fn new<F: Fn() + Send + 'static>(passphrase: SecStr, callback: F) -> Self {
+        let (tx, rx) = mpsc::channel();
+
+        thread::spawn(move || {
+            let vault = Vault::new("".to_owned());
+            tx.send((vault, passphrase)).unwrap();
+            callback();
+        });
+
+        CreateThread { vault_channel: rx }
+    }
 }
 
 pub fn create_unlock_vault_ui() -> Box {

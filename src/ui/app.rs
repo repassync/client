@@ -19,6 +19,8 @@ use std::process;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+use secstr::SecStr;
+
 use gtk::prelude::*;
 use gtk::*;
 use gio::{Resource, resources_register};
@@ -28,17 +30,24 @@ use model::Vault;
 use xdg;
 
 use ui::vault::{create_vault_ui, create_unlock_vault_ui};
-use ui::entry::create_entry_ui;
-use ui::main_window::create_main_window_ui;
+use ui::header_bar::{Header, create_header_bar_ui};
+use ui::main_window::{MainWindow, create_main_window_ui};
 use ui::views::create_views;
 
 use io::file::EncryptedVaultFile;
 
+enum LoadedVault {
+    LockedVault(EncryptedVaultFile),
+    UnlockedVault(Vault, SecStr),
+    NoVault
+}
+
 pub struct App {
     window: ApplicationWindow,
+    header: Header,
+    main_window: MainWindow,
 
-    file: Option<EncryptedVaultFile>,
-    vault: Option<Vault>
+    vault: LoadedVault
 }
 
 impl App {
@@ -58,62 +67,53 @@ impl App {
 
         let window = ApplicationWindow::new(&app);
 
-        let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/HeaderBar.glade");
-        let header: HeaderBar = builder.get_object("header").unwrap();
-
-        let new_entry_button: MenuButton = builder.get_object("add-toggle-button").unwrap();
-
-        window.set_titlebar(&header);
-
         window.set_default_size(800, 600);
         window.set_position(WindowPosition::Center);
-
-        let create_entry = create_entry_ui();
-        new_entry_button.set_popover(&create_entry);
-        new_entry_button.set_sensitive(false);
 
         let main_window = create_main_window_ui();
         window.add(&main_window.ui);
 
+        let header = create_header_bar_ui(&main_window.search_bar);
+        window.set_titlebar(&header.stack);
+
+
+        let main_window_bis = main_window.clone();
+
         create_views(&main_window.stack);
 
-        let create_vault = create_vault_ui();
-        main_window.stack.add_named(&create_vault, "create-vault");
+        let me = Rc::new(RefCell::new(App {
+            window,
+            header,
+            main_window,
+
+            vault: LoadedVault::NoVault
+        }));
+
+        let create_vault = create_vault_ui(me.clone());
+        main_window_bis.stack.add_named(&create_vault, "create-vault");
 
         let unlock_vault = create_unlock_vault_ui();
-        main_window.stack.add_named(&unlock_vault, "unlock-vault");
+        main_window_bis.stack.add_named(&unlock_vault, "unlock-vault");
 
         let xdg_dirs = xdg::BaseDirectories::with_prefix("repassync").unwrap();
-        let file =
-            match xdg_dirs.find_data_file("repassync.vault") {
-                Some(f) => {
-                    match EncryptedVaultFile::from_file(f) {
-                        Ok(f) => {
-                            main_window.stack.set_visible_child_name("unlock-vault");
-                            Some(f)
-                        },
-                        Err(e) => {
-                            error!("Unable to open vault file: {}", e);
-                            main_window.stack.set_visible_child_name("error-vault");
-                            None
-                        }
+        match xdg_dirs.find_data_file("repassync.vault") {
+            Some(f) => {
+                match EncryptedVaultFile::from_file(f) {
+                    Ok(f) => {
+                        main_window_bis.stack.set_visible_child_name("unlock-vault");
+                        me.borrow_mut().vault = LoadedVault::LockedVault(f)
+                    },
+                    Err(e) => {
+                        error!("Unable to open vault file: {}", e);
+                        main_window_bis.stack.set_visible_child_name("error-vault");
                     }
-                },
-                None => {
-                    main_window.stack.set_visible_child_name("create-vault");
-                    None
                 }
+            },
+            None => {
+                main_window_bis.stack.set_visible_child_name("create-vault");
+            }
 
-            };
-
-        let app = App {
-            window,
-
-            file,
-            vault: None
-        };
-
-        let me = Rc::new(RefCell::new(app));
+        }
 
         me
 
@@ -123,9 +123,33 @@ impl App {
         self.window.show_all();
     }
 
-    pub fn set_vault(&mut self, vault: Vault) {
-        self.vault = Some(vault);
-        // TODO refresh UI for entries
+    pub fn set_vault(&mut self, vault: Vault, pass: SecStr) {
+        self.vault = LoadedVault::UnlockedVault(vault, pass);
+        self.refresh();
+    }
+
+    pub fn refresh(&self) {
+        use self::LoadedVault::*;
+        match self.vault {
+            UnlockedVault(ref vault, _) => {
+                self.main_window.stack.set_visible_child_name("empty-vault");
+                self.header.stack.set_visible_child_name("password-list");
+            },
+            LockedVault(_) => {
+                self.main_window.stack.set_visible_child_name("unlock-vault");
+                self.header.stack.set_visible_child_name("empty-bar");
+            },
+            NoVault => {
+                self.main_window.stack.set_visible_child_name("create-vault");
+                self.header.stack.set_visible_child_name("empty-bar");
+            }
+        }
+        self.header.stack.set_sensitive(true);
+    }
+
+    pub fn set_busy(&self) {
+        self.main_window.stack.set_visible_child_name("busy-vault");
+        self.header.stack.set_sensitive(false);
     }
 
 }
