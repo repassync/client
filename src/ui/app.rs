@@ -33,7 +33,8 @@ use ui::vault::{create_vault_ui, create_unlock_vault_ui};
 use ui::entry::create_entry_ui;
 use ui::header_bar::{Header, create_header_bar_ui};
 use ui::main_window::{MainWindow, create_main_window_ui};
-use ui::views::create_views;
+use ui::views::{create_views, create_list_view};
+use ui::widget::create_password_widget;
 
 use io::file::EncryptedVaultFile;
 
@@ -47,6 +48,7 @@ pub struct App {
     window: ApplicationWindow,
     header: Header,
     main_window: MainWindow,
+    list: FlowBox,
 
     vault: LoadedVault
 }
@@ -83,10 +85,14 @@ impl App {
 
         create_views(&main_window.stack);
 
+        let list = create_list_view();
+        main_window.stack.add_named(&list, "list-vault");
+
         let me = Rc::new(RefCell::new(App {
             window,
             header,
             main_window,
+            list,
 
             vault: LoadedVault::NoVault
         }));
@@ -144,6 +150,7 @@ impl App {
                 warn!("Try to add entry to locked or inexistent vault");
             }
         }
+        self.refresh();
     }
 
     pub fn has_entry(&self, name: &String) -> bool {
@@ -163,7 +170,18 @@ impl App {
         use self::LoadedVault::*;
         match self.vault {
             UnlockedVault(ref vault, _) => {
-                self.main_window.stack.set_visible_child_name("empty-vault");
+                if vault.is_empty() {
+                    self.main_window.stack.set_visible_child_name("empty-vault");
+                } else {
+                    for child in self.list.get_children() {
+                        self.list.remove(&child);
+                    }
+                    for entry in vault {
+                        self.list.add(&create_password_widget(entry));
+                    }
+                    self.main_window.stack.set_visible_child_name("list-vault");
+                    self.main_window.stack.show_all();
+                }
                 self.header.stack.set_visible_child_name("password-list");
             },
             LockedVault(_) => {

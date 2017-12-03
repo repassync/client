@@ -10,6 +10,7 @@
     <file compressed="true">ui/PasswordWidget.glade</file>
     <file compressed="true">ui/EmptySearch.glade</file>
     <file compressed="true">ui/EmptyVault.glade</file>
+    <file compressed="true">ui/ListVault.glade</file>
     <file compressed="true">ui/ErrorVault.glade</file>
   </gresource>
 </gresources>

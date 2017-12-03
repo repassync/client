@@ -10,12 +10,19 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-pub use self::app::*;
-pub mod app;
+use gtk::*;
 
-mod vault;
-mod entry;
-mod header_bar;
-mod main_window;
-mod views;
-mod widget;
+use model::Entry;
+
+pub fn create_password_widget(e: &Entry) -> Frame {
+
+    let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/PasswordWidget.glade");
+
+    let frame: Frame = builder.get_object("password-widget-frame").unwrap();
+    let name: Label = builder.get_object("password-widget-name").unwrap();
+
+    name.set_text(e.name.as_str());
+
+    frame
+
+}

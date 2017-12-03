@@ -40,6 +40,22 @@ impl Vault {
         self.entries.contains_key(name)
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
+}
+
+impl<'a> IntoIterator for &'a Vault {
+
+    type Item = &'a Entry;
+
+    type IntoIter = ::std::collections::hash_map::Values<'a, String, Entry>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.entries.values()
+    }
+
 }
 
 #[derive(Debug, Clone)]

@@ -29,6 +29,17 @@ fn create_empty_view() -> Box {
 
 }
 
+pub fn create_list_view() -> FlowBox {
+
+    let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/ListVault.glade");
+
+    let flow: FlowBox = builder.get_object("list-box").unwrap();
+
+    flow
+
+
+}
+
 fn create_empty_search_view() -> Box {
 
     let builder = Builder::new_from_resource("/org/gnieh/Repassync/ui/EmptySearch.glade");
