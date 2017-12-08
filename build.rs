@@ -1,11 +1,15 @@
 extern crate pkg_config;
+extern crate xml;
 
 use std::env;
 use std::fs::File;
-use std::io::Write;
+use std::io::{Write, Error, ErrorKind};
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
 use std::process::Command;
+
+use xml::reader::{EventReader, XmlEvent};
 
 fn main() {
 
@@ -55,10 +59,49 @@ fn get_data_dir(base_dir: &str, profile: &String) -> PathBuf {
 }
 
 fn modified_after(origin: &PathBuf, new: &PathBuf) -> bool {
-    let origin_modified = origin.metadata().and_then(|md| md.modified());
+    let metadata = origin.metadata().unwrap();
+    let dir = origin.parent().unwrap();
+    let resource_file = File::open(origin).unwrap();
+    let mut parser = EventReader::new(resource_file);
+    let origin_modified =
+        metadata.modified().and_then(|m| newest(dir, &mut parser, false, m));
     let new_modified = new.metadata().and_then(|md| md.modified());
     match (origin_modified, new_modified) {
         (Ok(ts1), Ok(ts2)) => ts1 >= ts2,
         (_, _) => true
+    }
+}
+
+fn newest(dir: &Path, reader: &mut EventReader<File>, read_path: bool, last: SystemTime) -> Result<SystemTime, Error> {
+    match reader.next() {
+        Ok(XmlEvent::StartElement { ref name, .. }) if name.local_name == "file" => {
+            newest(dir, reader, true, last)
+        },
+        Ok(XmlEvent::Characters(ref path)) if read_path => {
+            let path = dir.join(path);
+            let res =
+                match path.metadata().and_then(|m| m.modified()) {
+                    Ok(m) => {
+                        if m > last {
+                            newest(dir, reader, false, m)
+                        } else {
+                            newest(dir, reader, false, last)
+                        }
+                    },
+                    e => {
+                        e
+                    }
+                };
+            res.or_else(|e| panic!("error: {:?} for file {:?}", e, path))
+        },
+        Ok(XmlEvent::EndDocument) => {
+            Ok(last)
+        },
+        Ok(_) => {
+            newest(dir, reader, read_path, last)
+        },
+        Err(e) => {
+            Err(Error::new(ErrorKind::Other, e))
+        }
     }
 }
